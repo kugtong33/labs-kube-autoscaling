@@ -1,0 +1,4 @@
+OVERALL_STATUS=SUCCESS_FULL
+NEXT_TYPE=CMD
+NEXT_CMD=./scripts/down.sh --run-id fixture-run-001
+EXIT_CODE=0

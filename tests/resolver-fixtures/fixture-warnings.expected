@@ -1,0 +1,4 @@
+OVERALL_STATUS=LEARNING_READY_WITH_WARNINGS_FULL
+NEXT_TYPE=CMD
+NEXT_CMD=./scripts/collect-evidence.sh --run-id fixture-run-001
+EXIT_CODE=0

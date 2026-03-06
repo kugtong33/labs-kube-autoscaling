@@ -1,0 +1,4 @@
+{"gate":"bootstrap_gate","severity":"CRITICAL","status":"PASS","exit_code":0,"started_at":"2026-01-01T00:00:00Z","duration_ms":10}
+{"gate":"reachability_gate","severity":"CRITICAL","status":"PASS","exit_code":0,"started_at":"2026-01-01T00:00:01Z","duration_ms":20}
+{"gate":"hpa_proof","severity":"CRITICAL","status":"PASS","exit_code":0,"started_at":"2026-01-01T00:00:02Z","duration_ms":180000}
+{"gate":"evidence_capture","severity":"NON_CRITICAL","status":"PASS","exit_code":0,"started_at":"2026-01-01T00:03:02Z","duration_ms":5}
