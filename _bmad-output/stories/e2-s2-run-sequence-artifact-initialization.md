@@ -1,7 +1,7 @@
 # Story E2-S2 — Run Sequence & Artifact Initialization
 
 **Epic:** E2 — Deterministic Gate Engine
-**Status:** Pending
+**Status:** Done
 
 ---
 
@@ -25,46 +25,46 @@
 ## Tasks
 
 ### Task 2.2.1 — Implement `resolve_run_id` in `scripts/lib/run-context.sh`
-- [ ] Create `scripts/lib/run-context.sh` with sourcing guard
-- [ ] Define `resolve_run_id()` function
-- [ ] If `RUN_ID_ARG` set: use it directly
-- [ ] Else if `RESUME_TARGET` set and `.state/last_run_id` exists: read from file
-- [ ] Else: generate `RUN_ID=$(date +%Y%m%d-%H%M%S)`
-- [ ] Export `RUN_ID`
-- [ ] Export `ARTIFACT_ROOT="artifacts/${RUN_ID}"`
-- [ ] Export `SCORECARD_FILE="${ARTIFACT_ROOT}/scorecard.jsonl"`
-- [ ] Export `GATE_DIR="${ARTIFACT_ROOT}/gates"`
-- [ ] Export `HPA_DIR="${ARTIFACT_ROOT}/hpa"`
-- [ ] Write `RUN_ID` to `.state/last_run_id`
+- [x] Create `scripts/lib/run-context.sh` with sourcing guard
+- [x] Define `resolve_run_id()` function
+- [x] If `RUN_ID_ARG` set: use it directly
+- [x] Else if `RESUME_TARGET` set and `.state/last_run_id` exists: read from file
+- [x] Else: generate `RUN_ID=$(date +%Y%m%d-%H%M%S)`
+- [x] Export `RUN_ID`
+- [x] Export `ARTIFACT_ROOT="artifacts/${RUN_ID}"`
+- [x] Export `SCORECARD_FILE="${ARTIFACT_ROOT}/scorecard.jsonl"`
+- [x] Export `GATE_DIR="${ARTIFACT_ROOT}/gates"`
+- [x] Export `HPA_DIR="${ARTIFACT_ROOT}/hpa"`
+- [x] Write `RUN_ID` to `.state/last_run_id`
 
 ### Task 2.2.2 — Implement `init_artifacts`
-- [ ] Define `init_artifacts()` function
-- [ ] Create `${ARTIFACT_ROOT}` with `mkdir -p`
-- [ ] Create `${GATE_DIR}` with `mkdir -p`
-- [ ] Create `${HPA_DIR}` with `mkdir -p`
-- [ ] Create `.state/` with `mkdir -p`
+- [x] Define `init_artifacts()` function
+- [x] Create `${ARTIFACT_ROOT}` with `mkdir -p`
+- [x] Create `${GATE_DIR}` with `mkdir -p`
+- [x] Create `${HPA_DIR}` with `mkdir -p`
+- [x] Create `.state/` with `mkdir -p`
 
 ### Task 2.2.3 — Implement `run_sequence` dispatcher
-- [ ] Define `run_sequence <sequence_name> <gate_names...>` function
-- [ ] Log sequence start to `${ARTIFACT_ROOT}/timeline.log`
-- [ ] Route `bootstrap_gate` → `run_gate "bootstrap_gate" "CRITICAL" "gate_bootstrap"`
-- [ ] Route `bootstrap_integrity` → `run_gate "bootstrap_integrity" "CRITICAL" "gate_bootstrap_integrity"`
-- [ ] Route `reachability_gate` → `run_gate "reachability_gate" "CRITICAL" "gate_reachability"`
-- [ ] Route `hpa_proof` → `run_gate "hpa_proof" "CRITICAL" "gate_hpa_proof"`
-- [ ] Route `evidence_capture` → `run_gate "evidence_capture" "NON_CRITICAL" "gate_evidence_capture"`
-- [ ] Route `teardown_integrity` → `run_gate "teardown_integrity" "NON_CRITICAL" "gate_teardown_integrity"`
-- [ ] Unknown gate name → `echo "Unknown gate: ${g}"; exit 112`
+- [x] Define `run_sequence <sequence_name> <gate_names...>` function
+- [x] Log sequence start to `${ARTIFACT_ROOT}/timeline.log`
+- [x] Route `bootstrap_gate` → `run_gate "bootstrap_gate" "CRITICAL" "gate_bootstrap"`
+- [x] Route `bootstrap_integrity` → `run_gate "bootstrap_integrity" "CRITICAL" "gate_bootstrap_integrity"`
+- [x] Route `reachability_gate` → `run_gate "reachability_gate" "CRITICAL" "gate_reachability"`
+- [x] Route `hpa_proof` → `run_gate "hpa_proof" "CRITICAL" "gate_hpa_proof"`
+- [x] Route `evidence_capture` → `run_gate "evidence_capture" "NON_CRITICAL" "gate_evidence_capture"`
+- [x] Route `teardown_integrity` → `run_gate "teardown_integrity" "NON_CRITICAL" "gate_teardown_integrity"`
+- [x] Unknown gate name → `echo "Unknown gate: ${g}"; exit 112`
 
 ### Task 2.2.4 — Implement `timeline.log` append
-- [ ] Append `[<timestamp>] START sequence: <sequence_name>` on sequence start
-- [ ] Append `[<timestamp>] GATE <name>: <status>` after each gate completes
+- [x] Append `[<timestamp>] START sequence: <sequence_name>` on sequence start
+- [x] Append `[<timestamp>] GATE <name>: <status>` after each gate completes
 
 ### Task 2.2.5 — Create `scripts/up.sh` entrypoint
-- [ ] Create `scripts/up.sh` with shebang and `set -euo pipefail`
-- [ ] Source all lib files: `config.sh`, `run-context.sh`, `gate-runner.sh`, `failure-maps.sh`, `scorecard.sh`, and all gate libs
-- [ ] Implement `parse_args "$@"` (handles `--resume`, `--run-id`, `--profile`, `--app-mode`, `--load-mode`)
-- [ ] Call `profile_admission_guard`
-- [ ] Call `resolve_run_id`
-- [ ] Call `init_artifacts`
-- [ ] Branch: if `RESUME_TARGET=hpa_proof` call `resume_hpa_proof_run`, else call full-run sequence
-- [ ] Call `print_final_scorecard`
+- [x] Create `scripts/up.sh` with shebang and `set -euo pipefail`
+- [x] Source all lib files: `config.sh`, `run-context.sh`, `gate-runner.sh`, `failure-maps.sh`, `scorecard.sh`, and all gate libs
+- [x] Implement `parse_args "$@"` (handles `--resume`, `--run-id`, `--profile`, `--app-mode`, `--load-mode`)
+- [x] Call `profile_admission_guard`
+- [x] Call `resolve_run_id`
+- [x] Call `init_artifacts`
+- [x] Branch: if `RESUME_TARGET=hpa_proof` call `resume_hpa_proof_run`, else call full-run sequence
+- [x] Call `print_final_scorecard`
