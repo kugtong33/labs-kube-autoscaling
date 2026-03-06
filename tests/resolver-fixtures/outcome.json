@@ -1,8 +1,0 @@
-{
-  "run_id": "fixture-run-001",
-  "mode": "full_run",
-  "resume_target": null,
-  "critical_failure_gate": null,
-  "critical_failure_code": null,
-  "rows_parsed": 4
-}

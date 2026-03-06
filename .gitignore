@@ -7,3 +7,6 @@ _bmad/
 artifacts/
 .state/
 *.log
+
+# Resolver side-effect artifacts written during test runs
+tests/resolver-fixtures/outcome.json
