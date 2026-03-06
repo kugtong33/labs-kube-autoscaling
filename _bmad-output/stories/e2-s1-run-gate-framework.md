@@ -25,10 +25,40 @@
 
 ## Tasks
 
-| ID | Task | Status |
-|---|---|---|
-| 2.1.1 | Create `scripts/lib/gate-runner.sh` — implement `run_gate` function | Pending |
-| 2.1.2 | Implement `duration_ms` helper using `date -u +%s%3N` (Linux) with macOS fallback | Pending |
-| 2.1.3 | Implement per-gate JSON artifact writer (all required fields) | Pending |
-| 2.1.4 | Implement JSONL scorecard append | Pending |
-| 2.1.5 | Implement severity-aware exit routing (CRITICAL → exit; NON_CRITICAL → warn+return 0) | Pending |
+### Task 2.1.1 — Create `scripts/lib/gate-runner.sh` — implement `run_gate`
+- [ ] Create file with shebang and sourcing guard
+- [ ] Define `run_gate <gate_name> <severity> <fn>` function signature
+- [ ] Set `gate_log` and `gate_json` path variables from `${GATE_DIR}`
+- [ ] Capture `start_ts` before executing function
+- [ ] Execute `${fn}` redirecting stdout+stderr to `${gate_log}`
+- [ ] Capture exit code `rc=$?`
+- [ ] Set `status=PASS` if `rc -eq 0`, else `status=FAIL`
+- [ ] Capture `end_ts` after execution
+
+### Task 2.1.2 — Implement `duration_ms` helper
+- [ ] Define `duration_ms <start_ts> <end_ts>` function
+- [ ] Linux path: use `date +%s%3N` for millisecond timestamps
+- [ ] macOS fallback: use `python3 -c 'import time; print(int(time.time()*1000))'`
+- [ ] Compute and echo difference in milliseconds
+
+### Task 2.1.3 — Implement per-gate JSON artifact writer
+- [ ] Write `gate` field to `${gate_json}`
+- [ ] Write `severity` field
+- [ ] Write `status` field (PASS/FAIL)
+- [ ] Write `exit_code` field (integer)
+- [ ] Write `started_at` field (ISO UTC timestamp)
+- [ ] Write `ended_at` field (ISO UTC timestamp)
+- [ ] Write `duration_ms` field (integer)
+- [ ] Write `log_file` field (absolute path)
+
+### Task 2.1.4 — Implement JSONL scorecard append
+- [ ] Format one-line JSON: `{"gate":"...","severity":"...","status":"...","exit_code":N}`
+- [ ] Append to `${SCORECARD_FILE}` with `>>`
+
+### Task 2.1.5 — Implement severity-aware exit routing
+- [ ] On CRITICAL + failure: call `print_failure_hint "${rc}"`
+- [ ] On CRITICAL + failure: call `print_next_command_for_code "${rc}"`
+- [ ] On CRITICAL + failure: `exit "${rc}"`
+- [ ] On NON_CRITICAL + failure: call `warn "NON_CRITICAL gate failed: ${gate_name} (code ${rc})"`
+- [ ] On NON_CRITICAL + failure: `return 0`
+- [ ] On pass: `return 0`

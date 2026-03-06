@@ -24,9 +24,22 @@
 
 ## Tasks
 
-| ID | Task | Status |
-|---|---|---|
-| 4.2.1 | Create `scripts/lib/gate-reachability.sh` — implement `gate_reachability` | Pending |
-| 4.2.2 | Implement NodePort detection via `kubectl get svc -n <ns> -o jsonpath` | Pending |
-| 4.2.3 | Implement curl smoke check with retry loop (3 attempts, 5s backoff) | Pending |
-| 4.2.4 | Print `Lab URL: http://localhost:<port>` on pass | Pending |
+### Task 4.2.1 — Create `scripts/lib/gate-reachability.sh` — implement `gate_reachability`
+- [ ] Create file with shebang and sourcing guard
+- [ ] Define `gate_reachability()` function skeleton
+- [ ] Source required lib files
+
+### Task 4.2.2 — Implement NodePort detection
+- [ ] Run `kubectl get svc -n ${NAMESPACE} ${APP_DEPLOYMENT} -o jsonpath='{.spec.ports[0].nodePort}'`
+- [ ] Store result as `NODE_PORT`
+- [ ] Verify `NODE_PORT` is non-empty; return non-zero if missing
+
+### Task 4.2.3 — Implement curl smoke check with retry loop
+- [ ] Initialize `attempt=1`, `max_attempts=3`, `backoff=5`
+- [ ] Loop: run `curl -sf --max-time 5 http://localhost:${NODE_PORT}/`
+- [ ] Return 0 on first successful (2xx) response
+- [ ] Sleep `${backoff}` seconds between attempts
+- [ ] Return non-zero after all 3 attempts exhausted
+
+### Task 4.2.4 — Print Lab URL on pass
+- [ ] Print `Lab URL: http://localhost:${NODE_PORT}` after successful smoke check
