@@ -95,6 +95,16 @@ gate_hpa_proof() {
   echo "ts,replicas" > "${csv}"
 
   # ------------------------------------------------------------------
+  # Pre-load artifact snapshots
+  # ------------------------------------------------------------------
+  echo "[hpa-proof] Capturing pre-load HPA artifacts..."
+  kubectl -n "${ns}" describe hpa "${hpa}" > "${hpa_dir}/hpa_describe.txt" 2>&1 || true
+  kubectl -n "${ns}" get hpa "${hpa}" -o yaml > "${hpa_dir}/hpa.yaml" 2>&1 || true
+  kubectl top nodes > "${hpa_dir}/top_nodes.txt" 2>&1 || true
+  kubectl -n "${ns}" top pods > "${hpa_dir}/top_pods.txt" 2>&1 || true
+  echo "[hpa-proof] Artifacts: hpa_describe.txt, hpa.yaml, top_nodes.txt, top_pods.txt"
+
+  # ------------------------------------------------------------------
   # Start load
   # ------------------------------------------------------------------
   echo "[hpa-proof] Starting load (mode=${load_mode})..."
@@ -164,10 +174,27 @@ gate_hpa_proof() {
 
   if [[ "${cooled}" -ne 1 ]]; then
     echo "[hpa-proof] FAIL (306): No cooldown observed within ${cool_sec}s." >&2
+    {
+      echo "HPA scale-up proved (baseline=${baseline}, max_seen=${max_seen})"
+      echo "Cooldown not observed within ${cool_sec}s"
+    } > "${hpa_dir}/summary.txt"
     return 306
   fi
 
   echo "[hpa-proof] Cooldown confirmed: replicas decreased from peak ${max_seen} to ${current}"
-  echo "[hpa-proof] HPA proof complete. Artifacts: ${csv}"
+
+  # ------------------------------------------------------------------
+  # PASS summary
+  # ------------------------------------------------------------------
+  {
+    echo "PASS"
+    echo "baseline_replicas=${baseline}"
+    echo "max_replicas_seen=${max_seen}"
+    echo "scale_up_window_sec=${ramp_sec}"
+    echo "cooldown_window_sec=${cool_sec}"
+    echo "samples_file=${csv}"
+  } > "${hpa_dir}/summary.txt"
+
+  echo "[hpa-proof] HPA proof complete. Artifacts: ${hpa_dir}/"
   return 0
 }
