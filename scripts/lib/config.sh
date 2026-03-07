@@ -52,10 +52,12 @@ get_max_replicas() {
 }
 
 # ---------------------------------------------------------------------------
-# get_available_memory_mb
-# Outputs available RAM in MB. Returns 0 (skip guard) when undetectable.
+# get_available_ram_mb
+# Outputs available RAM in MB.
+# Linux: free -m available column. macOS: vm_stat pages calculation.
+# Unrecognised OS: outputs 99999 (skips guard) with a warning.
 # ---------------------------------------------------------------------------
-get_available_memory_mb() {
+get_available_ram_mb() {
   local os
   os="$(uname -s 2>/dev/null || true)"
 
@@ -65,41 +67,45 @@ get_available_memory_mb() {
       ;;
     Darwin)
       # vm_stat reports pages (4 KB each); sum free + inactive for available
-      local pages_free pages_inactive page_size_kb=4
+      local pages_free pages_inactive
       pages_free="$(vm_stat 2>/dev/null | awk '/Pages free/{gsub(/\./, "", $3); print $3}')"
       pages_inactive="$(vm_stat 2>/dev/null | awk '/Pages inactive/{gsub(/\./, "", $3); print $3}')"
       if [[ -n "${pages_free}" && -n "${pages_inactive}" ]]; then
-        echo $(( (pages_free + pages_inactive) * page_size_kb / 1024 ))
+        echo $(( (pages_free + pages_inactive) * 4096 / 1048576 ))
       else
         echo 0
       fi
       ;;
     *)
-      # Unrecognised OS — skip guard gracefully
-      echo 0
+      echo "[config] Warning: OS not recognized, skipping memory guard" >&2
+      echo 99999
       ;;
   esac
 }
 
+# Keep the old name as an alias for backwards compatibility.
+get_available_memory_mb() { get_available_ram_mb; }
+
 # ---------------------------------------------------------------------------
 # profile_admission_guard
-# Warns (balanced) or blocks (stretch) when available RAM is below threshold.
-# Call this at the top of up.sh before any provisioning.
+# Warns (tiny, balanced) or blocks (stretch) when available RAM is below
+# threshold. Call this at the top of up.sh before any provisioning.
+# Returns non-zero only for stretch when RAM is insufficient.
 # ---------------------------------------------------------------------------
 profile_admission_guard() {
   local avail_mb
-  avail_mb="$(get_available_memory_mb)"
-
-  # If detection returned 0 (unavailable), skip the guard entirely
-  if [[ "${avail_mb}" -eq 0 ]]; then
-    echo "[config] Memory detection unavailable — skipping profile admission guard." >&2
-    return 0
-  fi
+  avail_mb="$(get_available_ram_mb)"
 
   case "${PROFILE}" in
+    tiny)
+      if [[ "${avail_mb}" -lt 2048 ]]; then
+        echo "[WARN] Profile 'tiny' recommends 2048MB RAM but only ~${avail_mb}MB available." >&2
+        echo "[WARN] Suggestion: set PROFILE=tiny to avoid instability." >&2
+      fi
+      ;;
     balanced)
       if [[ "${avail_mb}" -lt 4096 ]]; then
-        echo "[WARN] Profile 'balanced' recommends ≥4GB RAM but only ~${avail_mb}MB available." >&2
+        echo "[WARN] Profile 'balanced' recommends 4096MB RAM but only ~${avail_mb}MB available." >&2
         echo "[WARN] Suggestion: set PROFILE=tiny to avoid instability." >&2
       fi
       ;;
@@ -110,8 +116,9 @@ profile_admission_guard() {
         return 1
       fi
       ;;
-    tiny|*)
-      # tiny always passes; unknown profiles are validated elsewhere
+    *)
+      echo "[config] Unknown profile: ${PROFILE}. Valid values: tiny, balanced, stretch" >&2
+      return 1
       ;;
   esac
 }
