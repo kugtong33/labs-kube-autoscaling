@@ -27,11 +27,12 @@ gate_bootstrap() {
   # ------------------------------------------------------------------
   echo "[bootstrap] Checking KinD cluster..."
   local cluster="${CLUSTER_NAME:-autoscaling-lab}"
+  local kind_config="k8s/kind-config.yaml"
   if kind get clusters 2>/dev/null | grep -q "^${cluster}$"; then
     echo "[bootstrap] Cluster '${cluster}' already exists — skipping create."
   else
     echo "[bootstrap] Creating KinD cluster '${cluster}'..."
-    kind create cluster --name "${cluster}"
+    kind create cluster --name "${cluster}" --config "${kind_config}"
   fi
 
   # Explicitly switch to the correct kubectl context before any resource ops
