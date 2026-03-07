@@ -1,7 +1,7 @@
 # Story E4-S2 — Reachability Gate
 
 **Epic:** E4 — Bootstrap & Reachability Gates
-**Status:** Pending
+**Status:** Done
 
 ---
 
@@ -25,21 +25,21 @@
 ## Tasks
 
 ### Task 4.2.1 — Create `scripts/lib/gate-reachability.sh` — implement `gate_reachability`
-- [ ] Create file with shebang and sourcing guard
-- [ ] Define `gate_reachability()` function skeleton
-- [ ] Source required lib files
+- [x] Create file with shebang and sourcing guard
+- [x] Define `gate_reachability()` function skeleton
+- [x] Source required lib files
 
 ### Task 4.2.2 — Implement NodePort detection
-- [ ] Run `kubectl get svc -n ${NAMESPACE} ${APP_DEPLOYMENT} -o jsonpath='{.spec.ports[0].nodePort}'`
-- [ ] Store result as `NODE_PORT`
-- [ ] Verify `NODE_PORT` is non-empty; return non-zero if missing
+- [x] Run `kubectl get svc -n ${NAMESPACE} ${APP_DEPLOYMENT} -o jsonpath='{.spec.ports[0].nodePort}'`
+- [x] Store result as `NODE_PORT`
+- [x] Verify `NODE_PORT` is non-empty; return non-zero if missing
 
 ### Task 4.2.3 — Implement curl smoke check with retry loop
-- [ ] Initialize `attempt=1`, `max_attempts=3`, `backoff=5`
-- [ ] Loop: run `curl -sf --max-time 5 http://localhost:${NODE_PORT}/`
-- [ ] Return 0 on first successful (2xx) response
-- [ ] Sleep `${backoff}` seconds between attempts
-- [ ] Return non-zero after all 3 attempts exhausted
+- [x] Initialize `attempt=1`, `max_attempts=3`, `backoff=5`
+- [x] Loop: run `curl -sf --max-time 5 http://localhost:${NODE_PORT}/`
+- [x] Return 0 on first successful (2xx) response
+- [x] Sleep `${backoff}` seconds between attempts
+- [x] Return non-zero after all 3 attempts exhausted
 
 ### Task 4.2.4 — Print Lab URL on pass
-- [ ] Print `Lab URL: http://localhost:${NODE_PORT}` after successful smoke check
+- [x] Print `Lab URL: http://localhost:${NODE_PORT}` after successful smoke check
