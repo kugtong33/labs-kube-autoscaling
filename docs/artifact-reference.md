@@ -41,7 +41,7 @@ artifacts/
     │
     └── fix/                           # fix attempt artifacts (if fix.sh was run)
         ├── HPA-301.log
-        ├── HPA-301.json
+        ├── HPA-301.jsonl
         └── ...
 ```
 
@@ -197,20 +197,15 @@ Written by `gate_teardown_integrity` after `down.sh` runs.
 
 Written by `./scripts/fix.sh HPA-30X` for each fix attempt.
 
-Log format (one line per attempt):
+Log format (one line per attempt, appended):
 ```
 [2024-03-15T14:30:00Z] code=HPA-302 status=ok attempt=1 note=metrics-server applied and rolled out
 ```
 
-JSON format:
+JSONL format (`<code>.jsonl`, one line per attempt, appended — all attempts preserved):
 ```jsonc
-{
-  "code": "HPA-302",
-  "status": "ok",          // or "fail" or "bounded_stop"
-  "note": "metrics-server applied and rolled out",
-  "run_id": "20240315-142301",
-  "attempt": 1
-}
+{"code":"HPA-302","status":"fail","note":"metrics-server fix attempt 1 failed","run_id":"20240315-142301","attempt":1}
+{"code":"HPA-302","status":"ok","note":"metrics-server fix attempt 2 succeeded","run_id":"20240315-142301","attempt":2}
 ```
 
-If all 3 attempts are exhausted, a `fix-escalation-<code>.tar.gz` bundle is created in `artifacts/<run-id>/` containing all log and JSON files for that code.
+If all 3 attempts are exhausted, a `fix-escalation-<code>.tar.gz` bundle is created in `artifacts/<run-id>/` containing all `.log` and `.jsonl` files for that code.

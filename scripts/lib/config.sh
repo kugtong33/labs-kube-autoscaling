@@ -18,6 +18,7 @@ export PROFILE="${PROFILE:-tiny}"           # tiny | balanced | stretch
 # ---------------------------------------------------------------------------
 export NAMESPACE="${NAMESPACE:-autoscaling-lab}"
 export APP_DEPLOYMENT="${APP_DEPLOYMENT:-sample-app}"
+export APP_CONTAINER="${APP_CONTAINER:-app}"
 export HPA_NAME="${HPA_NAME:-sample-app-hpa}"
 
 # ---------------------------------------------------------------------------

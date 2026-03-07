@@ -133,8 +133,8 @@ gate_hpa_proof() {
       max_seen="${current}"
     fi
 
-    sleep "${poll_sec}"
     elapsed=$(( elapsed + poll_sec ))
+    [[ "${elapsed}" -lt "${ramp_sec}" ]] && sleep "${poll_sec}"
   done
 
   if [[ "${max_seen}" -le "${baseline}" ]]; then
@@ -168,8 +168,8 @@ gate_hpa_proof() {
       break
     fi
 
-    sleep "${poll_sec}"
     elapsed=$(( elapsed + poll_sec ))
+    [[ "${elapsed}" -lt "${cool_sec}" ]] && sleep "${poll_sec}"
   done
 
   if [[ "${cooled}" -ne 1 ]]; then

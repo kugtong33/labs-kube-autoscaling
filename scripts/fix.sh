@@ -43,9 +43,8 @@ log_fix_result() {
   local status="${2:?log_fix_result requires status}"
   local note="${3:?log_fix_result requires note}"
 
-  cat > "${FIX_DIR}/${code}.json" <<EOF
-{"code":"${code}","status":"${status}","note":"${note}","run_id":"${RUN_ID:-unknown}","attempt":${ATTEMPT}}
-EOF
+  echo "{\"code\":\"${code}\",\"status\":\"${status}\",\"note\":\"${note}\",\"run_id\":\"${RUN_ID:-unknown}\",\"attempt\":${ATTEMPT}}" \
+    >> "${FIX_DIR}/${code}.jsonl"
 
   echo "[$(date -u +%FT%TZ)] code=${code} status=${status} attempt=${ATTEMPT} note=${note}" \
     >> "${FIX_DIR}/${code}.log"
@@ -63,7 +62,7 @@ print_bounded_stop() {
   echo "Handoff bundle: ${bundle}"
   tar czf "${bundle}" \
     "${FIX_DIR}/${code}"*.log \
-    "${FIX_DIR}/${code}"*.json 2>/dev/null || true
+    "${FIX_DIR}/${code}"*.jsonl 2>/dev/null || true
   echo "Manual intervention required. See docs/troubleshooting.md#${code}"
   log_fix_result "${code}" "bounded_stop" "3 attempts exhausted"
 }
@@ -184,9 +183,10 @@ _fix_303_attempt_1() {
 _fix_303_attempt_2() {
   local ns="${NAMESPACE:-autoscaling-lab}"
   local deploy="${APP_DEPLOYMENT:-sample-app}"
+  local container="${APP_CONTAINER:-app}"
   echo "[fix-303] Patching CPU/memory requests directly..."
   kubectl -n "${ns}" patch deploy "${deploy}" --type merge \
-    -p '{"spec":{"template":{"spec":{"containers":[{"name":"app","resources":{"requests":{"cpu":"100m","memory":"128Mi"}}}]}}}}'
+    -p "{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"${container}\",\"resources\":{\"requests\":{\"cpu\":\"100m\",\"memory\":\"128Mi\"}}}]}}}}"
   kubectl -n "${ns}" rollout status "deploy/${deploy}" --timeout=180s
   kubectl -n "${ns}" get deploy "${deploy}" \
     -o jsonpath='{.spec.template.spec.containers[0].resources.requests.cpu}' | grep -q .

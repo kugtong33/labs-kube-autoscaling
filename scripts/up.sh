@@ -118,6 +118,9 @@ resume_hpa_proof_run() {
 # ---------------------------------------------------------------------------
 parse_args "$@"
 
+# Load env overrides written by fix.sh (e.g. HPA_COOLDOWN_SEC=420, LOAD_MODE=host)
+[[ -f ".state/env-overrides" ]] && source ".state/env-overrides"
+
 profile_admission_guard || exit 1
 
 resolve_run_id

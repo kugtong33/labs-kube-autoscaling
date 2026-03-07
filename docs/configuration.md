@@ -17,6 +17,7 @@ PROFILE=balanced APP_MODE=api ./scripts/up.sh
 | `PROFILE` | `tiny` | `tiny` \| `balanced` \| `stretch` | Controls `maxReplicas` on the HPA and enforces a minimum RAM requirement. See [Profile Ladder](#profile-ladder). |
 | `NAMESPACE` | `autoscaling-lab` | any valid K8s name | Kubernetes namespace where all lab resources are created. |
 | `APP_DEPLOYMENT` | `sample-app` | any valid deployment name | Name of the Kubernetes Deployment and Service to target. |
+| `APP_CONTAINER` | `app` | any valid container name | Name of the container within the deployment used for resource patching (fix HPA-303). |
 | `HPA_NAME` | `sample-app-hpa` | any valid HPA name | Name of the HPA resource created by the lab. |
 | `HPA_RAMP_SEC` | `180` | positive integer | Seconds the proof gate polls for a scale-up event after load starts. |
 | `HPA_COOLDOWN_SEC` | `240` | positive integer | Seconds the proof gate polls for a scale-down event after load stops. |

@@ -9,8 +9,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/config.sh"
 
-mkdir -p .state
-
 # ---------------------------------------------------------------------------
 # apply_preset <name>
 # Sets LOAD_CONCURRENCY and LOAD_SLEEP_SEC for a named preset.
@@ -85,6 +83,7 @@ start_load_host() {
   # Stop any existing host load first
   stop_load_host 2>/dev/null || true
 
+  mkdir -p .state
   while true; do curl -sf --max-time 2 "${url}" >/dev/null 2>&1; sleep "${sleep_sec}"; done &
   local load_pid=$!
   echo "${load_pid}" > .state/load.pid

@@ -21,7 +21,7 @@ teardown_namespace() {
   echo "[teardown] Deleting namespace ${ns}..."
   kubectl delete ns "${ns}" --timeout=60s 2>/dev/null || true
 
-  if kubectl get ns "${ns}" 2>/dev/null; then
+  if kubectl get ns "${ns}" >/dev/null 2>&1; then
     echo "[teardown] Warning: namespace still exists"
   else
     echo "[teardown] Namespace deleted: ${ns}"
