@@ -1,0 +1,21 @@
+# k8s/hpa-stretch.yaml — HPA for PROFILE=stretch
+# scaleTargetRef.name must match APP_DEPLOYMENT (default: sample-app)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sample-app-hpa
+  namespace: autoscaling-lab
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sample-app
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
