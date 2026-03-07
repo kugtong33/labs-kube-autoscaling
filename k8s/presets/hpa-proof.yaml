@@ -1,0 +1,23 @@
+# k8s/presets/hpa-proof.yaml — demo-safe HPA preset for HPA proof gate
+# CPU utilization target is set low (20%) to ensure scaling triggers under demo load.
+# scaleTargetRef.name must match APP_DEPLOYMENT (default: sample-app).
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sample-app-hpa
+  labels:
+    preset: hpa-proof
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sample-app   # matches APP_DEPLOYMENT default; override if needed
+  minReplicas: 1
+  maxReplicas: 5       # tiny-safe: stays within KinD single-node limits
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 20  # low threshold guarantees scale-up under demo load
