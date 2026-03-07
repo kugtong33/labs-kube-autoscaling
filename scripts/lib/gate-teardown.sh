@@ -41,15 +41,16 @@ teardown_namespace() {
 # Deletes the KinD cluster if it exists.
 # ---------------------------------------------------------------------------
 teardown_cluster() {
-  if ! kind get clusters 2>/dev/null | grep -q "^autoscaling-lab$"; then
-    echo "[teardown] Cluster 'autoscaling-lab' not found — skipping."
+  local cluster="${CLUSTER_NAME:-autoscaling-lab}"
+  if ! kind get clusters 2>/dev/null | grep -q "^${cluster}$"; then
+    echo "[teardown] Cluster '${cluster}' not found — skipping."
     return 0
   fi
 
-  echo "[teardown] Deleting KinD cluster autoscaling-lab..."
-  kind delete cluster --name autoscaling-lab
+  echo "[teardown] Deleting KinD cluster ${cluster}..."
+  kind delete cluster --name "${cluster}"
 
-  if kind get clusters 2>/dev/null | grep -q "^autoscaling-lab$"; then
+  if kind get clusters 2>/dev/null | grep -q "^${cluster}$"; then
     echo "[teardown] Warning: cluster still listed"
   else
     echo "[teardown] Cluster deleted"
@@ -81,7 +82,7 @@ gate_teardown_integrity() {
 
   # Check cluster status
   local cluster_status="deleted"
-  if kubectl cluster-info --context kind-autoscaling-lab >/dev/null 2>&1; then
+  if kubectl cluster-info --context "kind-${CLUSTER_NAME:-autoscaling-lab}" >/dev/null 2>&1; then
     cluster_status="present"
     echo "[teardown-integrity] Cluster: present"
   else

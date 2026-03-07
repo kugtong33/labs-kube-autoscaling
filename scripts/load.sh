@@ -35,6 +35,7 @@ apply_preset() {
 # Runs a busybox curl-loop pod in the namespace, labeled for cleanup.
 # ---------------------------------------------------------------------------
 start_load_pod() {
+  ensure_cluster_context || return 1
   local ns="${NAMESPACE:-autoscaling-lab}"
   local deploy="${APP_DEPLOYMENT:-sample-app}"
   local sleep_sec="${LOAD_SLEEP_SEC:-0.1}"
@@ -63,6 +64,7 @@ start_load_pod() {
 # Starts a background curl loop on the host; tracks PID in .state/load.pid.
 # ---------------------------------------------------------------------------
 start_load_host() {
+  ensure_cluster_context || return 1
   local ns="${NAMESPACE:-autoscaling-lab}"
   local deploy="${APP_DEPLOYMENT:-sample-app}"
   local sleep_sec="${LOAD_SLEEP_SEC:-0.1}"
@@ -96,6 +98,7 @@ start_load_host() {
 # Deletes load-generator pods by label.
 # ---------------------------------------------------------------------------
 stop_load_pod() {
+  ensure_cluster_context 2>/dev/null || true
   local ns="${NAMESPACE:-autoscaling-lab}"
   echo "[load] Deleting load-generator pods (label: app=load-generator)..."
   kubectl delete pods -n "${ns}" -l app=load-generator --ignore-not-found >/dev/null 2>&1 || true
@@ -132,6 +135,7 @@ stop_load() {
 # Prints "active (mode=pod|host)" or "stopped".
 # ---------------------------------------------------------------------------
 status_load() {
+  ensure_cluster_context 2>/dev/null || true
   local ns="${NAMESPACE:-autoscaling-lab}"
 
   # Check pod mode

@@ -89,6 +89,22 @@ get_available_ram_mb() {
 get_available_memory_mb() { get_available_ram_mb; }
 
 # ---------------------------------------------------------------------------
+# ensure_cluster_context
+# Switches the active kubectl context to kind-${CLUSTER_NAME}.
+# Call this after the KinD cluster is known to exist (i.e. post-bootstrap
+# or at the start of any entrypoint that assumes the cluster is running).
+# ---------------------------------------------------------------------------
+ensure_cluster_context() {
+  local ctx="kind-${CLUSTER_NAME:-autoscaling-lab}"
+  if ! kubectl config use-context "${ctx}" >/dev/null 2>&1; then
+    echo "[config] ERROR: kubectl context '${ctx}' not found." >&2
+    echo "[config] Is the KinD cluster running? Try: kind get clusters" >&2
+    return 1
+  fi
+  echo "[config] kubectl context set to: ${ctx}"
+}
+
+# ---------------------------------------------------------------------------
 # profile_admission_guard
 # Warns (tiny, balanced) or blocks (stretch) when available RAM is below
 # threshold. Call this at the top of up.sh before any provisioning.

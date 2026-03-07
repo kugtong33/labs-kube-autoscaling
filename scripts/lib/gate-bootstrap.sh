@@ -34,6 +34,9 @@ gate_bootstrap() {
     kind create cluster --name "${cluster}"
   fi
 
+  # Explicitly switch to the correct kubectl context before any resource ops
+  ensure_cluster_context
+
   echo "[bootstrap] Verifying cluster reachability..."
   kubectl cluster-info --context "kind-${cluster}"
 
@@ -112,6 +115,12 @@ gate_bootstrap_integrity() {
   local hpa="${HPA_NAME:-sample-app-hpa}"
   local cluster="${CLUSTER_NAME:-autoscaling-lab}"
   local ok=1
+
+  # Switch to the correct context before any kubectl calls
+  if ! ensure_cluster_context; then
+    echo "[bootstrap-integrity] FAIL: cannot select cluster context." >&2
+    return 1
+  fi
 
   echo "[bootstrap-integrity] Checking KinD cluster..."
   if kind get clusters 2>/dev/null | grep -q "^${cluster}$"; then

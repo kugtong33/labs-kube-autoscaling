@@ -52,6 +52,10 @@ export ARTIFACT_ROOT="${ARTIFACT_BASE:-artifacts}/${RUN_ID:-unset}"
 echo "[down.sh] NAMESPACE=${NAMESPACE}"
 echo "[down.sh] DELETE_CLUSTER=${DELETE_CLUSTER}  PRESERVE_ARTIFACTS=${PRESERVE_ARTIFACTS}"
 
+# Switch to the correct cluster context before any kubectl operations.
+# Use || true: if the cluster was already deleted, teardown can still clean up.
+ensure_cluster_context || true
+
 # ---------------------------------------------------------------------------
 # Teardown sequence
 # ---------------------------------------------------------------------------
