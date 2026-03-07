@@ -21,6 +21,7 @@ PROFILE=balanced APP_MODE=api ./scripts/up.sh
 | `HPA_RAMP_SEC` | `180` | positive integer | Seconds the proof gate polls for a scale-up event after load starts. |
 | `HPA_COOLDOWN_SEC` | `240` | positive integer | Seconds the proof gate polls for a scale-down event after load stops. |
 | `HPA_POLL_SEC` | `10` | positive integer | Polling interval in seconds during ramp and cooldown windows. |
+| `ARTIFACT_ROOT` | `artifacts/<run-id>` | any writable path | Root directory for all run artifacts. Set automatically from `RUN_ID`; override for custom paths. |
 
 ---
 
