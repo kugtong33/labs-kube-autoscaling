@@ -80,9 +80,9 @@ run_gate() {
   started_at="$(date -u +%FT%TZ)"
   start_ms="$(_now_ms)"
 
-  # Execute the gate function; redirect all output to the log file
-  "${fn}" >"${gate_log}" 2>&1
-  rc=$?
+  # Execute the gate function; tee to both terminal and log file
+  "${fn}" 2>&1 | tee "${gate_log}" || true
+  rc="${PIPESTATUS[0]}"
 
   end_ms="$(_now_ms)"
   ended_at="$(date -u +%FT%TZ)"
@@ -125,6 +125,10 @@ EOF
   # ------------------------------------------------------------------
   if [[ "${status}" == "FAIL" ]]; then
     if [[ "${severity}" == "CRITICAL" ]]; then
+      # Log failure to timeline before exiting so the entry is never missing
+      if declare -f _tlog >/dev/null 2>&1; then
+        _tlog "GATE ${gate_name}: FAIL (code ${rc}) — aborting sequence"
+      fi
       # Print actionable failure hint if failure-maps.sh is loaded
       if declare -f print_failure_hint >/dev/null 2>&1; then
         print_failure_hint "${rc}" >&2

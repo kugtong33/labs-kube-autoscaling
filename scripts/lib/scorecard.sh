@@ -79,11 +79,14 @@ _resolve_next_cmd() {
 # ---------------------------------------------------------------------------
 # print_next_action_from_scorecard
 #
-# Convenience wrapper: resolves outcome and prints the Next command line.
-# Sets OVERALL_STATUS, NEXT_TYPE, NEXT_CMD, RESOLVER_EXIT_CODE in caller env.
+# Resolves outcome and prints the concrete next command to stdout.
+# Also sets OVERALL_STATUS, NEXT_TYPE, NEXT_CMD, RESOLVER_EXIT_CODE in caller env.
 # ---------------------------------------------------------------------------
 print_next_action_from_scorecard() {
   resolve_run_outcome
+  local final_cmd
+  final_cmd="$(_resolve_next_cmd "${NEXT_CMD:-}")"
+  echo "Next command: ${final_cmd}"
 }
 
 # ---------------------------------------------------------------------------

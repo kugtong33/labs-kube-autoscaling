@@ -26,15 +26,16 @@ gate_bootstrap() {
   # 1. KinD cluster — idempotent
   # ------------------------------------------------------------------
   echo "[bootstrap] Checking KinD cluster..."
-  if kind get clusters 2>/dev/null | grep -q "^autoscaling-lab$"; then
-    echo "[bootstrap] Cluster 'autoscaling-lab' already exists — skipping create."
+  local cluster="${CLUSTER_NAME:-autoscaling-lab}"
+  if kind get clusters 2>/dev/null | grep -q "^${cluster}$"; then
+    echo "[bootstrap] Cluster '${cluster}' already exists — skipping create."
   else
-    echo "[bootstrap] Creating KinD cluster 'autoscaling-lab'..."
-    kind create cluster --name autoscaling-lab
+    echo "[bootstrap] Creating KinD cluster '${cluster}'..."
+    kind create cluster --name "${cluster}"
   fi
 
   echo "[bootstrap] Verifying cluster reachability..."
-  kubectl cluster-info --context kind-autoscaling-lab
+  kubectl cluster-info --context "kind-${cluster}"
 
   # ------------------------------------------------------------------
   # 2. Namespace — idempotent
@@ -91,7 +92,7 @@ gate_bootstrap() {
     -o jsonpath='{.spec.ports[0].nodePort}' 2>/dev/null || true)"
 
   echo "[bootstrap] Bootstrap complete."
-  kubectl cluster-info --context kind-autoscaling-lab
+  kubectl cluster-info --context "kind-${cluster}"
 
   if [[ -n "${node_port}" ]]; then
     echo "[bootstrap] NodePort URL: http://localhost:${node_port}"
@@ -108,13 +109,15 @@ gate_bootstrap() {
 gate_bootstrap_integrity() {
   local ns="${NAMESPACE:-autoscaling-lab}"
   local deploy="${APP_DEPLOYMENT:-sample-app}"
+  local hpa="${HPA_NAME:-sample-app-hpa}"
+  local cluster="${CLUSTER_NAME:-autoscaling-lab}"
   local ok=1
 
   echo "[bootstrap-integrity] Checking KinD cluster..."
-  if kind get clusters 2>/dev/null | grep -q "^autoscaling-lab$"; then
+  if kind get clusters 2>/dev/null | grep -q "^${cluster}$"; then
     echo "[bootstrap-integrity] Cluster: OK"
   else
-    echo "[bootstrap-integrity] FAIL: cluster 'autoscaling-lab' not found." >&2
+    echo "[bootstrap-integrity] FAIL: cluster '${cluster}' not found." >&2
     ok=0
   fi
 
@@ -134,11 +137,11 @@ gate_bootstrap_integrity() {
     ok=0
   fi
 
-  echo "[bootstrap-integrity] Checking HPA..."
-  if kubectl -n "${ns}" get hpa >/dev/null 2>&1; then
+  echo "[bootstrap-integrity] Checking HPA '${hpa}'..."
+  if kubectl -n "${ns}" get hpa "${hpa}" >/dev/null 2>&1; then
     echo "[bootstrap-integrity] HPA: OK"
   else
-    echo "[bootstrap-integrity] FAIL: no HPA found in namespace '${ns}'." >&2
+    echo "[bootstrap-integrity] FAIL: HPA '${hpa}' not found in namespace '${ns}'." >&2
     ok=0
   fi
 

@@ -15,6 +15,7 @@ PROFILE=balanced APP_MODE=api ./scripts/up.sh
 | `APP_MODE` | `landing` | `landing` \| `api` | Selects which app image to deploy. `landing` serves an HTML page; `api` serves a single JSON endpoint. |
 | `LOAD_MODE` | `pod` | `pod` \| `host` | Controls how load is generated. `pod` runs a busybox curl-loop inside the cluster; `host` runs a curl loop on the local machine. |
 | `PROFILE` | `tiny` | `tiny` \| `balanced` \| `stretch` | Controls `maxReplicas` on the HPA and enforces a minimum RAM requirement. See [Profile Ladder](#profile-ladder). |
+| `CLUSTER_NAME` | `autoscaling-lab` | any valid KinD name | Name of the KinD cluster created and managed by the lab. |
 | `NAMESPACE` | `autoscaling-lab` | any valid K8s name | Kubernetes namespace where all lab resources are created. |
 | `APP_DEPLOYMENT` | `sample-app` | any valid deployment name | Name of the Kubernetes Deployment and Service to target. |
 | `APP_CONTAINER` | `app` | any valid container name | Name of the container within the deployment used for resource patching (fix HPA-303). |

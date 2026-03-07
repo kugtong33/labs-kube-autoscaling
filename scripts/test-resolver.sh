@@ -23,6 +23,7 @@ trap 'rm -rf "${TMP_ARTIFACT}"' EXIT
 passed=0
 failed=0
 total=0
+mode=""
 
 for expected_file in "${FIXTURES_DIR}"/*.expected; do
   fixture_base="${expected_file%.expected}"
@@ -36,7 +37,11 @@ for expected_file in "${FIXTURES_DIR}"/*.expected; do
 
   total=$(( total + 1 ))
 
-  actual="$(node "${RESOLVER}" "${jsonl_file}" "full_run" "${FIXED_RUN_ID}" 2>/dev/null)"
+  # Detect mode from filename: fixtures containing "resume" use resume mode
+  mode="full_run"
+  [[ "${fixture_name}" == *resume* ]] && mode="resume"
+
+  actual="$(node "${RESOLVER}" "${jsonl_file}" "${mode}" "${FIXED_RUN_ID}" 2>/dev/null)"
   expected="$(cat "${expected_file}")"
 
   if diff_out="$(diff <(echo "${expected}") <(echo "${actual}") 2>&1)"; then

@@ -16,6 +16,7 @@ export PROFILE="${PROFILE:-tiny}"           # tiny | balanced | stretch
 # ---------------------------------------------------------------------------
 # Kubernetes coordinates
 # ---------------------------------------------------------------------------
+export CLUSTER_NAME="${CLUSTER_NAME:-autoscaling-lab}"
 export NAMESPACE="${NAMESPACE:-autoscaling-lab}"
 export APP_DEPLOYMENT="${APP_DEPLOYMENT:-sample-app}"
 export APP_CONTAINER="${APP_CONTAINER:-app}"
@@ -101,7 +102,7 @@ profile_admission_guard() {
     tiny)
       if [[ "${avail_mb}" -lt 2048 ]]; then
         echo "[WARN] Profile 'tiny' recommends 2048MB RAM but only ~${avail_mb}MB available." >&2
-        echo "[WARN] Suggestion: set PROFILE=tiny to avoid instability." >&2
+        echo "[WARN] Consider freeing RAM or reducing background workloads." >&2
       fi
       ;;
     balanced)
