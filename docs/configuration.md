@@ -55,10 +55,42 @@ Manifests: `k8s/app/landing/` and `k8s/app/api/`.
 
 ## Load Modes
 
-| Mode | Mechanism | State file | Cleanup |
-|---|---|---|---|
-| `pod` | `busybox` curl-loop pod in-cluster | none | `kubectl delete pod load-generator -n <ns>` |
-| `host` | background `curl` loop on local machine | `.state/load.pid` | `kill $(cat .state/load.pid)` |
+| Mode | Mechanism | Default | State file | Cleanup |
+|---|---|---|---|---|
+| `pod` | `busybox` pod, N parallel `wget` workers per batch (in-cluster) | background (in-cluster) | none | `./scripts/load.sh --stop` |
+| `host` | Fibonacci-ramped concurrent `curl` batches on the local machine | **foreground** | `.state/load.pids` (background only) | `./scripts/load.sh --stop` or Ctrl+C |
+
+### Host mode — foreground vs background
+
+`host` mode defaults to foreground: the script runs in the terminal, prints a live progress line, and exits cleanly on Ctrl+C.
+
+```bash
+# Foreground (default) — blocks until Ctrl+C
+./scripts/load.sh --mode host
+
+# Background — detaches immediately, appends progress to a log file
+./scripts/load.sh --mode host --background load.log
+tail -f load.log
+```
+
+### Fibonacci concurrency ramp (host mode)
+
+Load starts at concurrency 3 and steps up the Fibonacci sequence every 10 seconds:
+
+```
+t=0s   concurrency=3
+t=10s  concurrency=5
+t=20s  concurrency=8
+t=30s  concurrency=13
+t=40s  concurrency=21
+...
+```
+
+Each step fires all requests in parallel (background subshells + `wait`) and prints running totals:
+
+```
+[load] requests=147    avg_latency= 42ms  concurrency=13
+```
 
 Use `./scripts/load.sh --status` to check and `./scripts/load.sh --stop` to stop either mode.
 
@@ -74,6 +106,7 @@ Use `./scripts/load.sh --status` to check and `./scripts/load.sh --stop` to stop
 PROFILE=balanced APP_MODE=api ./scripts/up.sh
 
 # Use host-side load generation (useful when pod networking is restricted)
+# Host load runs in background during up.sh (foreground when called directly)
 LOAD_MODE=host ./scripts/up.sh
 
 # Extend the ramp window for a slower machine

@@ -15,6 +15,7 @@ artifacts/
     ├── evidence-checklist.md          # reviewer-ready checklist
     ├── teardown-integrity.json        # post-teardown state
     ├── timeline.log                   # timestamped gate sequence log
+    ├── load.log                       # host-mode load progress log (LOAD_MODE=host only)
     │
     ├── gates/                         # per-gate log + JSON artifacts
     │   ├── bootstrap_gate.log
@@ -190,6 +191,24 @@ Written by `gate_teardown_integrity` after `down.sh` runs.
 ```
 
 `rerun_ready: true` means the namespace is gone and a fresh `./scripts/up.sh` will not conflict.
+
+---
+
+### `load.log`
+
+Written only when `LOAD_MODE=host`. Contains timestamped progress lines from the background load generator, including the Fibonacci concurrency step-up events and per-batch request totals.
+
+```
+[load] Background load started → http://localhost:30080/
+[load] Fibonacci concurrency ramp: 3, 5, 8, 13, 21, … (step every 10s)
+[load] requests=3   avg_latency=12ms  concurrency=3
+[load] requests=6   avg_latency=11ms  concurrency=3
+[load] Concurrency stepped: 3 → 5
+[load] requests=11  avg_latency=13ms  concurrency=5
+...
+```
+
+Use `tail -f artifacts/<run-id>/load.log` to monitor a running background load session.
 
 ---
 

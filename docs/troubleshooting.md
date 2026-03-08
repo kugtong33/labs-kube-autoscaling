@@ -115,7 +115,7 @@ kubectl -n autoscaling-lab get pod load-generator   # for pod mode
 **Escalation ladder:**
 | Attempt | Action |
 |---------|--------|
-| 1 | Re-run `load.sh --mode <LOAD_MODE>` |
+| 1 | Re-run `./scripts/load.sh --mode <LOAD_MODE>` (host mode: add `--background <file>` if needed) |
 | 2 | Switch load mode (`pod→host` or `host→pod`); write override to `.state/env-overrides` |
 | 3 | Start fallback `kubectl run load-fallback` busybox pod with low rate |
 
@@ -145,10 +145,12 @@ kubectl -n autoscaling-lab get hpa
 | Attempt | Action |
 |---------|--------|
 | 1 | Apply `k8s/presets/hpa-proof.yaml` (CPU target: 20%) + start load |
-| 2 | Extend ramp to 300s (`HPA_RAMP_SEC=300`) + increase concurrency to 50 |
+| 2 | Extend ramp to 300s (`HPA_RAMP_SEC=300`); fibonacci ramp will reach concurrency 21+ by then |
 | 3 | Lower HPA CPU target to 20% + switch to host load mode |
 
 **Common causes:** CPU target too high for the load intensity; `tiny` profile node already saturated by system pods; Docker resource limits set too low.
+
+**Load intensity note:** Host mode sends requests concurrently in parallel batches and ramps up via the Fibonacci sequence (3 → 5 → 8 → 13 → 21 → …, stepping every 10s). If scale-up is not triggered within 30–40s of load start, verify Docker has ≥2 CPU cores allocated.
 
 ---
 

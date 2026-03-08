@@ -32,7 +32,16 @@ gate_bootstrap() {
     echo "[bootstrap] Cluster '${cluster}' already exists — skipping create."
   else
     echo "[bootstrap] Creating KinD cluster '${cluster}'..."
-    kind create cluster --name "${cluster}" --config "${kind_config}"
+    if ! kind create cluster --name "${cluster}" --config "${kind_config}"; then
+      echo "[bootstrap] Cluster creation failed. Cleaning up and retrying..."
+      kind delete cluster --name "${cluster}" 2>/dev/null || true
+      docker rm -f "${cluster}-control-plane" 2>/dev/null || true
+      echo "[bootstrap] Retrying cluster creation..."
+      if ! kind create cluster --name "${cluster}" --config "${kind_config}"; then
+        echo "[bootstrap] ERROR: Cluster creation failed after retry. Aborting." >&2
+        return 1
+      fi
+    fi
   fi
 
   # Explicitly switch to the correct kubectl context before any resource ops

@@ -39,8 +39,10 @@ Optional flags:
 ```bash
 ./scripts/up.sh --profile balanced   # more replicas (needs ≥4GB RAM)
 ./scripts/up.sh --app-mode api       # JSON endpoint instead of HTML page
-./scripts/up.sh --load-mode host     # run load from host instead of a pod
+./scripts/up.sh --load-mode host     # run load from host (fibonacci ramp, background during proof)
 ```
+
+If KinD cluster creation fails (e.g. a port conflict), `up.sh` automatically cleans up the failed node and retries once before aborting.
 
 **Step 3 — Read the scorecard**
 

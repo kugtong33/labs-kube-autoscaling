@@ -12,7 +12,12 @@ __GATE_HPA_PROOF_SH=1
 # ---------------------------------------------------------------------------
 start_load() {
   local mode="${1:?start_load requires mode}"
-  ./scripts/load.sh --mode "${mode}"
+  if [[ "${mode}" == "host" ]]; then
+    local logfile="${ARTIFACT_ROOT:-artifacts}/load.log"
+    ./scripts/load.sh --mode host --preset hpa-proof --background "${logfile}"
+  else
+    ./scripts/load.sh --mode "${mode}" --preset hpa-proof
+  fi
 }
 
 # ---------------------------------------------------------------------------

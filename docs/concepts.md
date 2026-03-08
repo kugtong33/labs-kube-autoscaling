@@ -100,3 +100,12 @@ The lab proves autoscaling by measuring four things in sequence:
 4. **Artifacts** — Every replica count reading is written to `replica_samples.csv` with a timestamp. The `summary.txt` records the final verdict.
 
 A successful proof means the HPA both scaled **up** under load and scaled **down** after load — demonstrating the full autoscaling lifecycle.
+
+### Load generator behaviour
+
+The load generator (`scripts/load.sh`) uses a **Fibonacci concurrency ramp** to build pressure gradually:
+
+- Starts at concurrency 3; every 10 seconds advances to the next Fibonacci number (3 → 5 → 8 → 13 → 21 → …)
+- Each step fires all requests **in parallel** (concurrent subshells), not sequentially
+- **Pod mode** (`LOAD_MODE=pod`): runs a `busybox` pod inside the cluster with N parallel `wget` workers; always background
+- **Host mode** (`LOAD_MODE=host`): runs `curl` batches on the local machine; **foreground by default** (live progress in terminal), `--background <file>` for detached operation
