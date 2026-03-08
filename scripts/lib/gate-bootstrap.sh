@@ -44,6 +44,20 @@ gate_bootstrap() {
     fi
   fi
 
+  # Apply profile-based Docker memory limit to the cluster node (best-effort)
+  local node_mem
+  case "${PROFILE:-tiny}" in
+    tiny)     node_mem="512m" ;;
+    balanced) node_mem="1g"   ;;
+    stretch)  node_mem="2g"   ;;
+    *)        node_mem="512m" ;;
+  esac
+  echo "[bootstrap] Applying ${node_mem} memory limit to node '${cluster}-control-plane'..."
+  docker update --memory "${node_mem}" --memory-swap "${node_mem}" \
+    "${cluster}-control-plane" 2>/dev/null \
+    && echo "[bootstrap] Node memory limit set: ${node_mem}" \
+    || echo "[bootstrap] WARN: docker update memory limit not supported in this environment (continuing)"
+
   # Explicitly switch to the correct kubectl context before any resource ops
   ensure_cluster_context
 
@@ -86,7 +100,7 @@ gate_bootstrap() {
     echo "[bootstrap] Falling back to direct manifest apply..."
     local app_mode="${APP_MODE:-landing}"
     local profile="${PROFILE:-tiny}"
-    kubectl apply -f "k8s/app/${app_mode}/deployment.yaml" -n "${ns}"
+    kubectl apply -f "k8s/app/${app_mode}/deployment-${profile}.yaml" -n "${ns}"
     kubectl apply -f "k8s/app/${app_mode}/service.yaml"    -n "${ns}"
     kubectl apply -f "k8s/hpa-${profile}.yaml"             -n "${ns}"
   fi

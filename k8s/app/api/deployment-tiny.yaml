@@ -1,25 +1,31 @@
-# k8s/presets/deployment-tiny-safe.yaml — minimal-resource deployment fallback
-# Used by fix_hpa_303 attempt 3 to ensure CPU requests are always present.
-# Image matches k8s/app/landing/ (nginx:alpine landing page default).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sample-app
   labels:
-    preset: deployment-tiny-safe
+    app: autoscaling-lab
+    mode: api
+    profile: tiny
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sample-app
+      app: autoscaling-lab
   template:
     metadata:
       labels:
-        app: sample-app
+        app: autoscaling-lab
+        mode: api
+        profile: tiny
     spec:
       containers:
         - name: app
           image: nginx:alpine
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo '{"status":"ok"}' > /usr/share/nginx/html/index.html
+              nginx -g 'daemon off;'
           ports:
             - containerPort: 80
           resources:

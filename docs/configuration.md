@@ -29,11 +29,15 @@ PROFILE=balanced APP_MODE=api ./scripts/up.sh
 
 ## Profile Ladder
 
-| Profile | `maxReplicas` | Min RAM | Use Case |
-|---|---|---|---|
-| `tiny` | 5 | 2 GB | Laptops, CI pipelines, quick demos |
-| `balanced` | 7 | 4 GB | Development workstations |
-| `stretch` | 10 | 8 GB | High-spec machines or cloud VMs |
+| Profile | `maxReplicas` | Node memory limit | App CPU (req/limit) | App memory limit | Use Case |
+|---|---|---|---|---|---|
+| `tiny` | 5 | 512 MB | 25m / 200m | 128 Mi | Laptops, CI pipelines, quick demos |
+| `balanced` | 7 | 1 GB | 50m / 300m | 256 Mi | Development workstations |
+| `stretch` | 10 | 2 GB | 100m / 500m | 512 Mi | High-spec machines or cloud VMs |
+
+**Node memory limit** is applied to the KinD Docker container via `docker update --memory` after cluster creation. This is best-effort — it will be skipped with a warning in environments where Docker memory updates are not supported.
+
+**App resource limits** are hard limits set on the `sample-app` container. Each profile has its own deployment manifest (`k8s/app/<mode>/deployment-<profile>.yaml`).
 
 The profile admission guard runs at the start of `up.sh`:
 - **tiny**: always passes (no RAM block).
@@ -49,7 +53,7 @@ The profile admission guard runs at the start of `up.sh`:
 | `landing` | `nginx:alpine` | `GET /` → HTML page | High per-request byte cost, good for CPU stress |
 | `api` | lightweight HTTP server | `GET /` → `{"status":"ok"}` | Low per-request cost, requires higher concurrency to trigger HPA |
 
-Manifests: `k8s/app/landing/` and `k8s/app/api/`.
+Manifests: `k8s/app/landing/deployment-<profile>.yaml` and `k8s/app/api/deployment-<profile>.yaml` (one file per profile per mode).
 
 ---
 

@@ -86,9 +86,9 @@ kubectl -n autoscaling-lab get deploy sample-app \
 **Escalation ladder:**
 | Attempt | Action |
 |---------|--------|
-| 1 | Re-apply `k8s/app/<APP_MODE>/deployment.yaml` + rollout wait |
-| 2 | `kubectl patch deploy` to set `cpu: 100m, memory: 128Mi` directly |
-| 3 | Apply `k8s/presets/deployment-tiny-safe.yaml` (cpu: 50m guaranteed) |
+| 1 | Re-apply `k8s/app/<APP_MODE>/deployment-<PROFILE>.yaml` + rollout wait |
+| 2 | `kubectl patch deploy` to set profile-appropriate requests (tiny: 25m/32Mi, balanced: 50m/64Mi, stretch: 100m/128Mi) |
+| 3 | Apply `k8s/presets/deployment-tiny-safe.yaml` (cpu: 25m, memory: 128Mi guaranteed) |
 
 ---
 
@@ -189,23 +189,23 @@ kubectl -n autoscaling-lab describe hpa sample-app-hpa
 
 Actual timing varies with machine load, Docker resource limits, and KinD node capacity.
 
-### tiny (maxReplicas: 5)
+### tiny (maxReplicas: 5, node: 512 MB, app limit: 128 Mi)
 
-- Scale-up expected within **60–120 seconds** of load start
+- Scale-up expected within **30–60 seconds** of load start (low CPU request makes threshold easy to breach)
 - Cooldown expected within **3–5 minutes** after load stops
 - Suitable for: laptops, CI, quick demos
-- If scale-up takes longer than 120s, check that Docker has ≥2 CPU cores allocated
+- If scale-up takes longer than 60s, check that Docker has ≥2 CPU cores allocated
 
-### balanced (maxReplicas: 7)
-
-- Scale-up expected within **45–90 seconds**
-- Higher replica ceiling demonstrates more pronounced autoscaling
-- Suitable for: development workstations with ≥4GB available RAM
-- Consider `HPA_RAMP_SEC=240` if your machine is slow to warm up
-
-### stretch (maxReplicas: 10)
+### balanced (maxReplicas: 7, node: 1 GB, app limit: 256 Mi)
 
 - Scale-up expected within **30–60 seconds**
+- Higher replica ceiling demonstrates more pronounced autoscaling
+- Suitable for: development workstations with ≥4 GB available RAM
+- Consider `HPA_RAMP_SEC=240` if your machine is slow to warm up
+
+### stretch (maxReplicas: 10, node: 2 GB, app limit: 512 Mi)
+
+- Scale-up expected within **20–45 seconds**
 - Most realistic profile; most likely to need extended cooldown window
-- Suitable for: high-spec machines or cloud VMs with ≥8GB available RAM
+- Suitable for: high-spec machines or cloud VMs with ≥8 GB available RAM
 - May benefit from `HPA_COOLDOWN_SEC=420` pre-emptively to avoid HPA-306

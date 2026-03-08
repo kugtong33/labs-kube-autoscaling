@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-app
+  labels:
+    app: autoscaling-lab
+    mode: api
+    profile: stretch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autoscaling-lab
+  template:
+    metadata:
+      labels:
+        app: autoscaling-lab
+        mode: api
+        profile: stretch
+    spec:
+      containers:
+        - name: app
+          image: nginx:alpine
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo '{"status":"ok"}' > /usr/share/nginx/html/index.html
+              nginx -g 'daemon off;'
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

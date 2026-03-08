@@ -43,9 +43,9 @@ apply_app_mode() {
 
   echo "[app-mode] Applying APP_MODE=${app_mode}, PROFILE=${profile}..."
 
-  # Apply deployment
-  echo "[app-mode] Applying k8s/app/${app_mode}/deployment.yaml..."
-  kubectl apply -f "k8s/app/${app_mode}/deployment.yaml" -n "${ns}"
+  # Apply deployment (profile-specific resource sizing)
+  echo "[app-mode] Applying k8s/app/${app_mode}/deployment-${profile}.yaml..."
+  kubectl apply -f "k8s/app/${app_mode}/deployment-${profile}.yaml" -n "${ns}"
 
   # Apply service
   echo "[app-mode] Applying k8s/app/${app_mode}/service.yaml..."
