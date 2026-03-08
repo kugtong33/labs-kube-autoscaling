@@ -119,6 +119,9 @@ HPA_RAMP_SEC=300 ./scripts/up.sh
 # Resume after a fix with a specific run ID
 ./scripts/up.sh --resume hpa_proof --run-id 20260306T120000Z
 
-# Teardown while preserving artifacts
+# Teardown (deletes cluster by default) while preserving artifacts
 ./scripts/down.sh --preserve-artifacts
+
+# Keep the KinD cluster alive after teardown (reuse on next up.sh)
+./scripts/down.sh --keep-cluster
 ```

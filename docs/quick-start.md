@@ -51,8 +51,8 @@ At the end of `up.sh`, a scorecard is printed. See [Reading the Scorecard](#read
 **Step 4 — Tear down**
 
 ```bash
-./scripts/down.sh                # removes namespace, preserves KinD cluster
-./scripts/down.sh --delete-cluster  # also deletes the KinD cluster
+./scripts/down.sh                # deletes namespace and KinD cluster
+./scripts/down.sh --keep-cluster # deletes namespace but keeps the KinD cluster
 ```
 
 ---

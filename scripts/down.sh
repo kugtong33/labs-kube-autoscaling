@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # scripts/down.sh — autoscaling lab teardown
-# Usage: ./scripts/down.sh [--run-id <id>] [--preserve-artifacts] [--delete-cluster]
+# Usage: ./scripts/down.sh [--run-id <id>] [--preserve-artifacts] [--keep-cluster]
 
 set -euo pipefail
 
@@ -13,7 +13,7 @@ source "${SCRIPT_DIR}/lib/gate-teardown.sh"
 # Arg parsing
 # ---------------------------------------------------------------------------
 PRESERVE_ARTIFACTS=0
-DELETE_CLUSTER=0
+DELETE_CLUSTER=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -25,12 +25,12 @@ while [[ $# -gt 0 ]]; do
       PRESERVE_ARTIFACTS=1
       shift
       ;;
-    --delete-cluster)
-      DELETE_CLUSTER=1
+    --keep-cluster)
+      DELETE_CLUSTER=0
       shift
       ;;
     --help|-h)
-      echo "Usage: ./scripts/down.sh [--run-id <id>] [--preserve-artifacts] [--delete-cluster]"
+      echo "Usage: ./scripts/down.sh [--run-id <id>] [--preserve-artifacts] [--keep-cluster]"
       exit 0
       ;;
     *)
@@ -51,6 +51,7 @@ export ARTIFACT_ROOT="${ARTIFACT_BASE:-artifacts}/${RUN_ID:-unset}"
 
 echo "[down.sh] NAMESPACE=${NAMESPACE}"
 echo "[down.sh] DELETE_CLUSTER=${DELETE_CLUSTER}  PRESERVE_ARTIFACTS=${PRESERVE_ARTIFACTS}"
+[[ "${DELETE_CLUSTER}" -eq 0 ]] && echo "[down.sh] Cluster will be kept (--keep-cluster)"
 
 # Switch to the correct cluster context before any kubectl operations.
 # Use || true: if the cluster was already deleted, teardown can still clean up.

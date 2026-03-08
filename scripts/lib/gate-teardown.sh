@@ -29,7 +29,7 @@ teardown_namespace() {
 
   if [[ "${preserve}" -eq 0 ]]; then
     echo "[teardown] Clearing .state/ files..."
-    rm -f .state/last_run_id .state/load.pid .state/env-overrides
+    rm -f .state/last_run_id .state/load.pid .state/load.pids .state/env-overrides
   fi
 
   echo "[teardown] Namespace teardown: done"
