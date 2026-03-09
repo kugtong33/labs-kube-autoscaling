@@ -52,37 +52,61 @@ gate_hpa_proof() {
   mkdir -p "${hpa_dir}"
 
   # ------------------------------------------------------------------
-  # Precondition checks
+  # Precondition checks — retry for up to 60 seconds
   # ------------------------------------------------------------------
-  echo "[hpa-proof] Checking HPA '${hpa}' in namespace '${ns}'..."
-  if ! kubectl -n "${ns}" get hpa "${hpa}" >/dev/null 2>&1; then
-    echo "[hpa-proof] FAIL (301): HPA '${hpa}' not found in namespace '${ns}'." >&2
-    return 301
-  fi
-  echo "[hpa-proof] HPA: OK"
+  local pre_deadline=$(( $(date +%s) + 60 ))
+  local pre_attempt=0
+  local pre_fail_code=0
 
-  echo "[hpa-proof] Checking metrics availability (kubectl top nodes)..."
-  if ! kubectl top nodes >/dev/null 2>/dev/null; then
-    echo "[hpa-proof] FAIL (302): kubectl top nodes unavailable — metrics-server not ready." >&2
-    return 302
-  fi
-  echo "[hpa-proof] Node metrics: OK"
+  echo "[hpa-proof] Checking preconditions (HPA, deployment, metrics) — up to 60s..."
+  while true; do
+    pre_fail_code=0
+    pre_attempt=$(( pre_attempt + 1 ))
+    echo "[hpa-proof] Precondition attempt ${pre_attempt} ($(date +%s) / deadline ${pre_deadline})..."
 
-  echo "[hpa-proof] Checking pod metrics (kubectl top pods)..."
-  if ! kubectl -n "${ns}" top pods >/dev/null 2>/dev/null; then
-    echo "[hpa-proof] FAIL (302): kubectl top pods unavailable in namespace '${ns}'." >&2
-    return 302
-  fi
-  echo "[hpa-proof] Pod metrics: OK"
+    # 301 — HPA present
+    if ! kubectl -n "${ns}" get hpa "${hpa}" >/dev/null 2>&1; then
+      echo "[hpa-proof] HPA '${hpa}' not found in namespace '${ns}'." >&2
+      pre_fail_code=301
+    else
+      echo "[hpa-proof] HPA: OK"
 
-  echo "[hpa-proof] Checking CPU requests on deployment '${deploy}'..."
-  local cpu_request
-  cpu_request="$(kubectl -n "${ns}" get deploy "${deploy}" \
-    -o jsonpath='{.spec.template.spec.containers[*].resources.requests.cpu}' 2>/dev/null || true)"
-  if ! echo "${cpu_request}" | grep -q .; then
-    echo "[hpa-proof] FAIL (303): No CPU request set on deployment '${deploy}'." >&2
-    return 303
-  fi
+      # 302 — node metrics
+      if ! kubectl top nodes >/dev/null 2>/dev/null; then
+        echo "[hpa-proof] kubectl top nodes unavailable — metrics-server not ready." >&2
+        pre_fail_code=302
+
+      # 302 — pod metrics
+      elif ! kubectl -n "${ns}" top pods >/dev/null 2>/dev/null; then
+        echo "[hpa-proof] kubectl top pods unavailable in namespace '${ns}'." >&2
+        pre_fail_code=302
+
+      # 303 — CPU requests
+      else
+        local cpu_request
+        cpu_request="$(kubectl -n "${ns}" get deploy "${deploy}" \
+          -o jsonpath='{.spec.template.spec.containers[*].resources.requests.cpu}' 2>/dev/null || true)"
+        if ! echo "${cpu_request}" | grep -q .; then
+          echo "[hpa-proof] No CPU request set on deployment '${deploy}'." >&2
+          pre_fail_code=303
+        fi
+      fi
+    fi
+
+    if [[ "${pre_fail_code}" -eq 0 ]]; then
+      echo "[hpa-proof] All preconditions passed."
+      break
+    fi
+
+    if [[ "$(date +%s)" -ge "${pre_deadline}" ]]; then
+      echo "[hpa-proof] FAIL (${pre_fail_code}): Preconditions not met after 60s." >&2
+      return "${pre_fail_code}"
+    fi
+
+    echo "[hpa-proof] Retrying in 10s..."
+    sleep 10
+  done
+
   echo "[hpa-proof] CPU request: ${cpu_request} — OK"
 
   # ------------------------------------------------------------------
