@@ -80,9 +80,13 @@ run_gate() {
   started_at="$(date -u +%FT%TZ)"
   start_ms="$(_now_ms)"
 
-  # Execute the gate function; tee to both terminal and log file
-  "${fn}" 2>&1 | tee "${gate_log}" || true
+  # Execute the gate function; tee to both terminal and log file.
+  # set -e is temporarily disabled so the pipeline doesn't trigger an early exit;
+  # PIPESTATUS[0] is captured before any other command resets it.
+  set +e
+  "${fn}" 2>&1 | tee "${gate_log}"
   rc="${PIPESTATUS[0]}"
+  set -e
 
   end_ms="$(_now_ms)"
   ended_at="$(date -u +%FT%TZ)"
