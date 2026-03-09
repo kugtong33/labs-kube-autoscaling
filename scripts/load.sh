@@ -141,6 +141,16 @@ start_load_pod() {
   local concurrency="${LOAD_CONCURRENCY:-10}"
   local url="http://${deploy}/"
 
+  # Validate before embedding in pod shell command
+  if [[ ! "${concurrency}" =~ ^[0-9]+$ ]] || [[ "${concurrency}" -lt 1 ]]; then
+    echo "[load] ERROR: Invalid LOAD_CONCURRENCY='${concurrency}'. Must be a positive integer." >&2
+    return 1
+  fi
+  if [[ ! "${sleep_sec}" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    echo "[load] ERROR: Invalid LOAD_SLEEP_SEC='${sleep_sec}'. Must be a non-negative number." >&2
+    return 1
+  fi
+
   echo "[load] Deleting any existing load-generator pod..."
   kubectl delete pod load-generator -n "${ns}" --ignore-not-found >/dev/null 2>&1 || true
 
@@ -150,13 +160,16 @@ start_load_pod() {
     --image=busybox \
     --restart=Never \
     --labels="app=load-generator,managed-by=load-sh" \
-    -- /bin/sh -c "while true; do
-      for i in \$(seq 1 ${concurrency}); do
-        wget -q -O- ${url} &
+    --env="LOAD_CONCURRENCY=${concurrency}" \
+    --env="LOAD_SLEEP_SEC=${sleep_sec}" \
+    --env="LOAD_URL=${url}" \
+    -- /bin/sh -c 'while true; do
+      for i in $(seq 1 "$LOAD_CONCURRENCY"); do
+        wget -q -O- "$LOAD_URL" &
       done
       wait
-      sleep ${sleep_sec}
-    done"
+      sleep "$LOAD_SLEEP_SEC"
+    done'
 
   echo "[load] Waiting for pod to be running (timeout 30s)..."
   kubectl -n "${ns}" wait pod/load-generator --for=condition=Ready --timeout=30s 2>/dev/null || true
@@ -322,6 +335,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --concurrency)
       CONCURRENCY="${2:?--concurrency requires a value}"
+      if [[ ! "${CONCURRENCY}" =~ ^[0-9]+$ ]] || [[ "${CONCURRENCY}" -lt 1 ]] || [[ "${CONCURRENCY}" -gt 100 ]]; then
+        echo "[load] --concurrency must be a number between 1 and 100" >&2; exit 2
+      fi
       shift 2
       ;;
     --background)

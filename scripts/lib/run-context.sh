@@ -16,12 +16,25 @@ __RUN_CONTEXT_SH=1
 #
 # Persists the resolved RUN_ID to .state/last_run_id.
 # ---------------------------------------------------------------------------
+_validate_run_id() {
+  local id="${1}" source="${2:-}"
+  if [[ ! "${id}" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    echo "[run-context] ERROR: Invalid run ID${source:+ from ${source}}: '${id}'" >&2
+    echo "[run-context] Run IDs must contain only alphanumeric characters, dots, hyphens, and underscores." >&2
+    exit 1
+  fi
+}
+
 resolve_run_id() {
   if [[ -n "${RUN_ID_ARG:-}" ]]; then
+    _validate_run_id "${RUN_ID_ARG}" "--run-id flag"
     export RUN_ID="${RUN_ID_ARG}"
   elif [[ -n "${RESUME_TARGET:-}" ]]; then
     if [[ -f ".state/last_run_id" ]]; then
-      export RUN_ID="$(cat .state/last_run_id)"
+      local _saved_id
+      _saved_id="$(cat .state/last_run_id)"
+      _validate_run_id "${_saved_id}" ".state/last_run_id"
+      export RUN_ID="${_saved_id}"
     else
       echo "[run-context] ERROR: --resume requested but .state/last_run_id not found." >&2
       echo "[run-context] Start a full run first: ./scripts/up.sh" >&2

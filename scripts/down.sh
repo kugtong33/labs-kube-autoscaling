@@ -18,7 +18,12 @@ DELETE_CLUSTER=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --run-id)
-      export RUN_ID="${2:?--run-id requires a value}"
+      _rid="${2:?--run-id requires a value}"
+      if [[ ! "${_rid}" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+        echo "[down.sh] ERROR: Invalid --run-id '${_rid}'. Use only alphanumeric characters, dots, hyphens, and underscores." >&2
+        exit 1
+      fi
+      export RUN_ID="${_rid}"
       shift 2
       ;;
     --preserve-artifacts)
@@ -45,7 +50,12 @@ export DELETE_CLUSTER
 
 # Resolve ARTIFACT_ROOT for teardown-integrity.json
 if [[ -z "${RUN_ID:-}" ]] && [[ -f ".state/last_run_id" ]]; then
-  export RUN_ID="$(cat .state/last_run_id)"
+  _saved_rid="$(cat .state/last_run_id)"
+  if [[ ! "${_saved_rid}" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    echo "[down.sh] ERROR: Stored run ID is invalid: '${_saved_rid}'. Remove .state/last_run_id and retry." >&2
+    exit 1
+  fi
+  export RUN_ID="${_saved_rid}"
 fi
 export ARTIFACT_ROOT="${ARTIFACT_BASE:-artifacts}/${RUN_ID:-unset}"
 
