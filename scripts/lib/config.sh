@@ -117,19 +117,19 @@ profile_admission_guard() {
   case "${PROFILE}" in
     tiny)
       if [[ "${avail_mb}" -lt 2048 ]]; then
-        echo "[WARN] Profile 'tiny' recommends 2048MB RAM but only ~${avail_mb}MB available." >&2
+        echo "[WARN] Profile 'tiny' requires 2GB node RAM but only ~${avail_mb}MB available." >&2
         echo "[WARN] Consider freeing RAM or reducing background workloads." >&2
       fi
       ;;
     balanced)
       if [[ "${avail_mb}" -lt 4096 ]]; then
-        echo "[WARN] Profile 'balanced' recommends 4096MB RAM but only ~${avail_mb}MB available." >&2
+        echo "[WARN] Profile 'balanced' requires 4GB node RAM but only ~${avail_mb}MB available." >&2
         echo "[WARN] Suggestion: set PROFILE=tiny to avoid instability." >&2
       fi
       ;;
     stretch)
       if [[ "${avail_mb}" -lt 8192 ]]; then
-        echo "[ERROR] Profile 'stretch' requires ≥8GB RAM. Only ~${avail_mb}MB available. Aborting." >&2
+        echo "[ERROR] Profile 'stretch' requires 8GB node RAM. Only ~${avail_mb}MB available. Aborting." >&2
         echo "[ERROR] Use PROFILE=balanced or PROFILE=tiny." >&2
         return 1
       fi

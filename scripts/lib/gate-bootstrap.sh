@@ -47,10 +47,10 @@ gate_bootstrap() {
   # Apply profile-based Docker memory limit to the cluster node (best-effort)
   local node_mem
   case "${PROFILE:-tiny}" in
-    tiny)     node_mem="512m" ;;
-    balanced) node_mem="1g"   ;;
-    stretch)  node_mem="2g"   ;;
-    *)        node_mem="512m" ;;
+    tiny)     node_mem="2g" ;;
+    balanced) node_mem="4g" ;;
+    stretch)  node_mem="8g" ;;
+    *)        node_mem="2g" ;;
   esac
   echo "[bootstrap] Applying ${node_mem} memory limit to node '${cluster}-control-plane'..."
   docker update --memory "${node_mem}" --memory-swap "${node_mem}" \
